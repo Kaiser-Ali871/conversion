@@ -14,17 +14,20 @@ class ImageRequest(BaseModel):
 
 @app.post("/base64-to-image/")
 async def base64_to_image(data: ImageRequest):
+    """
+    Accepts a Base64 string and filename, returns the image as a streaming response.
+    """
     try:
-        # Decode Base64 string
+        # Decode Base64 to bytes
         img_bytes = base64.b64decode(data.image_base64)
         img_stream = io.BytesIO(img_bytes)
         img_stream.seek(0)
 
-        # Determine MIME type from filename
+        # Infer MIME type based on filename
         mime_type = infer_mime_type(data.filename)
 
-        # Return image as binary
+        # Return StreamingResponse so connection closes immediately
         return StreamingResponse(img_stream, media_type=mime_type)
+    
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error processing image: {e}")
-
